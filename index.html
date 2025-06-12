@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scream for Ice Cream</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px #000;
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .item:hover {
+      transform: scale(1.05);
+    }
+
+    .item h2 {
+      margin-top: 0;
+      color: #ff4f4f;
+    }
+
+    .item p {
+      font-size: 0.95em;
+      color: #ddd;
+    }
+
+    button, .mic-btn {
+      background-color: #ff4f4f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover, .mic-btn:hover {
+      background-color: #ff1c1c;
+    }
+  </style>
+</head>
+<body>
+  <h1>💀 Scream for Ice Cream 🍦</h1>
+  <p>Click the button and scream into your microphone to unlock a treat!</p>
+  <button class="mic-btn" onclick="startScreamDetection()">Start Screaming Detection</button>
+
+  <div class="menu">
+    <div class="item">
+      <h2>Scream Sundae</h2>
+      <p>Popping candy, red syrup, and eyeball gummies. Scream to unlock!</p>
+    </div>
+    <div class="item">
+      <h2>Monster Mash Milkshake</h2>
+      <p>Chocolate, mint, cookie crumbles, and a monster straw.</p>
+    </div>
+    <div class="item">
+      <h2>Alien Goo Cups</h2>
+      <p>Neon green jelly with candy “organisms” inside.</p>
+    </div>
+  </div>
+
+  <script>
+    let audioContext, analyser, microphone, dataArray, rafId;
+
+    function startScreamDetection() {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          microphone = audioContext.createMediaStreamSource(stream);
+          microphone.connect(analyser);
+          analyser.fftSize = 512;
+          const bufferLength = analyser.frequencyBinCount;
+          dataArray = new Uint8Array(bufferLength);
+
+          detectScream();
+        })
+        .catch((err) => {
+          alert('Microphone access denied. Please allow access to use scream detection.');
+          console.error(err);
+        });
+    }
+
+    function detectScream() {
+      analyser.getByteFrequencyData(dataArray);
+      let volume = dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
+
+      if (volume > 80) {
+        cancelAnimationFrame(rafId);
+        alert('Scream detected! 🍦 You unlocked a special treat!');
+      } else {
+        rafId = requestAnimationFrame(detectScream);
+      }
+    }
+  </script>
+</body>
+</html>
